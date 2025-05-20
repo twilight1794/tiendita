@@ -1,0 +1,87 @@
+Project Tiendita {
+  database_type: "sqlite"
+}
+
+Table "producto" {
+  "id" INTEGER [pk, increment]
+  "fecha" INTEGER [not null]
+  "tipo" INTEGER [default: 0]
+}
+
+Table "venta" {
+  "id" INTEGER [pk, increment]
+  "fecha" INTEGER [not null]
+}
+
+Table "codigo" {
+  "id" INTEGER [pk, increment]
+  "codigo" TEXT [unique, not null]
+  "producto" INTEGER [not null]
+}
+
+Table "venta_elemento" {
+  "id" INTEGER [pk, increment]
+  "producto" INTEGER [not null]
+  "cantidad" INTEGER [not null, default: 0]
+  "impuestos" INTEGER [not null]
+  "venta" INTEGER [not null]
+}
+
+Table "metodo_pago" {
+  "id" INTEGER [pk, increment]
+  "nombre" TEXT [not null]
+  "descripcion" TEXT
+  "icono" TEXT [not null]
+  "tipo" INTEGER [not null]
+  "datos" BLOB
+}
+
+Table "venta_pago" {
+  "id" INTEGER [pk, increment]
+  "venta" INTEGER [not null]
+  "metodo_pago" INTEGER [not null]
+  "cantidad" NUMERIC [not null]
+}
+
+Table "nota" {
+  "id" INTEGER [pk, increment]
+  "venta" INTEGER [not null]
+  "texto" TEXT
+  "favorito" INTEGER [not null, default: 0]
+}
+
+Table "sucursal" {
+  "id" INTEGER [pk, increment]
+  "nombre" TEXT
+}
+
+Table "inventario" {
+  "id" INTEGER [pk, increment]
+  "producto" INTEGER [not null]
+  "sucursal" INTEGER [not null]
+  "cantidad" INTEGER [not null]
+}
+
+Table "impuesto" {
+  "id" INTEGER [pk, increment]
+  "nombre" TEXT
+  "valor_pred" NUMERIC [default: 0]
+}
+
+Table "impuesto_producto" {
+  "id" INTEGER [pk, increment]
+  "impuesto"  INTEGER [not null]
+  "producto" INTEGER [not null]
+}
+
+Ref:"producto"."id" < "codigo"."producto" [delete: set null]
+Ref:"producto"."id" < "venta_elemento"."producto" [delete: set null]
+Ref:"venta"."id" < "venta_elemento"."venta" [delete: cascade]
+Ref:"venta"."id" < "venta_pago"."venta" [delete: cascade]
+Ref:"metodo_pago"."id" < "venta_pago"."metodo_pago" [delete: set null]
+Ref:"venta"."id" < "nota"."venta" [delete: cascade]
+Ref:"producto"."id" < "inventario"."producto" [delete: cascade]
+Ref:"sucursal"."id" < "inventario"."sucursal" [delete: cascade]
+Ref:"impuesto"."id" < "impuesto_producto"."impuesto" [delete: cascade]
+Ref:"producto"."id" < "impuesto_producto"."producto" [delete: cascade]
+
