@@ -4,13 +4,32 @@ Project Tiendita {
 
 Table "producto" {
   "id" INTEGER [pk, increment]
-  "fecha" INTEGER [not null]
+  "descripcion" TEXT [not null]
   "tipo" INTEGER [default: 0]
+  "costo" INTEGER [not null]
+  "venta" INTEGER [not null]
+  "departamento" INTEGER [not null]
+}
+
+Table "precio" {
+  "id" INTEGER [pk, increment]
+  "producto" INTEGER [not null]
+  "nombre" TEXT
+  "minimo" INTEGER
+  "maximo" INTEGER
+  "precio" INTEGER [not null]
+}
+
+Table "departamento" {
+  "id" INTEGER [pk, increment]
+  "nombre" TEXT [not null]
 }
 
 Table "venta" {
   "id" INTEGER [pk, increment]
   "fecha" INTEGER [not null]
+  "cajero" INTEGER [not null]
+  "cancelado" BOOLEAN [not null, default: FALSE]
 }
 
 Table "codigo" {
@@ -24,7 +43,9 @@ Table "venta_elemento" {
   "producto" INTEGER [not null]
   "cantidad" INTEGER [not null, default: 0]
   "impuestos" INTEGER [not null]
+  "costo" INTEGER [not null]
   "venta" INTEGER [not null]
+  "devuelto" BOOLEAN [not null, default: FALSE]
 }
 
 Table "metodo_pago" {
@@ -40,7 +61,7 @@ Table "venta_pago" {
   "id" INTEGER [pk, increment]
   "venta" INTEGER [not null]
   "metodo_pago" INTEGER [not null]
-  "cantidad" NUMERIC [not null]
+  "cantidad" REAL [not null]
 }
 
 Table "nota" {
@@ -60,22 +81,50 @@ Table "inventario" {
   "producto" INTEGER [not null]
   "sucursal" INTEGER [not null]
   "cantidad" INTEGER [not null]
+  "minimo" INTEGER [not null]
+  "maximo" INTEGER [not null]
 }
 
 Table "impuesto" {
   "id" INTEGER [pk, increment]
   "nombre" TEXT
-  "valor_pred" NUMERIC [default: 0]
+  "valor_pred" REAL [default: 0]
 }
 
 Table "impuesto_producto" {
   "id" INTEGER [pk, increment]
-  "impuesto"  INTEGER [not null]
+  "impuesto" INTEGER [not null]
   "producto" INTEGER [not null]
 }
 
-Ref:"producto"."id" < "codigo"."producto" [delete: set null]
+Table "venta_impuesto_producto" {
+  "id" INTEGER [pk, increment]
+  "impuesto" INTEGER [not null]
+  "producto" INTEGER [not null]
+  "valor" REAL [not null]
+}
+
+Table "usuario" {
+  "usuario" TEXT [pk]
+  "contra" TEXT [not null]
+  "nombre" TEXT
+  "tipo" INTEGER [not null]
+  "activo" BOOLEAN [not null, default: 0]
+}
+
+Table "configuracion" {
+  "id" INTEGER [pk, increment]
+  "nombre" TEXT [not null, unique]
+  "descripcion" TEXT [not null]
+  "tipo" INTEGER [not null]
+  "valor" BLOB
+}
+
+Ref:"departamento"."id" < "producto"."departamento" [delete: set null]
+Ref:"producto"."id" < "codigo"."producto" [delete: cascade]
+Ref:"producto"."id" < "precio"."producto" [delete: cascade]
 Ref:"producto"."id" < "venta_elemento"."producto" [delete: set null]
+Ref:"usuario"."usuario" < "venta"."cajero" [delete: set null, update: cascade]
 Ref:"venta"."id" < "venta_elemento"."venta" [delete: cascade]
 Ref:"venta"."id" < "venta_pago"."venta" [delete: cascade]
 Ref:"metodo_pago"."id" < "venta_pago"."metodo_pago" [delete: set null]
@@ -84,4 +133,5 @@ Ref:"producto"."id" < "inventario"."producto" [delete: cascade]
 Ref:"sucursal"."id" < "inventario"."sucursal" [delete: cascade]
 Ref:"impuesto"."id" < "impuesto_producto"."impuesto" [delete: cascade]
 Ref:"producto"."id" < "impuesto_producto"."producto" [delete: cascade]
-
+Ref:"impuesto"."id" < "venta_impuesto_producto"."impuesto" [delete: set null]
+Ref:"producto"."id" < "venta_impuesto_producto"."producto" [delete: set null]
